@@ -1,0 +1,26 @@
+{
+  "name": "Renault-welding-use-case",
+  "version": "1.0.0",
+  "description": "Renault Welding use case",
+  "main": "index.js",
+  "authors": {
+    "name": "European Trustworthy AI Foundation",
+    "email": "contact.confiance.ai"
+  },
+  "license": "CC BY-NC-ND 4.0",
+  "repository": "https://github.com/confianceai/renault-welding-use-case",
+  "scripts": {
+    "serve": "vuepress dev documentation",
+    "build": "vuepress build documentation",
+    "lint": "prettier --write .",
+    "spellcheck": "cspell ."
+  },
+  "devDependencies": {
+    "vuepress": "^1.9.10",
+    "vuepress-plugin-matomo": "^1.0.2",
+    "vuepress-plugin-zooming": "^1.1.8"
+  },
+  "dependencies": {
+    "cspell": "^8.17.3"
+  }
+}
