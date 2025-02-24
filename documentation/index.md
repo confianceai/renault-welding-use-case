@@ -16,26 +16,40 @@ In the highly competitive automotive industry, quality control is essential to e
 
 One of the challenges for Renault is to improve the reliability of quality control for welding seams in automotive body manufacturing. Currently, this inspection is consistently performed by a human operator due to the legal dimension related to user safety, but can have limitations, such as:
 - Inconsistent inspection results due to human error.
-- detecting micro-defects in real-time.
-- consuming manual inspections, slowing down production.
-- costs of rework or recalls if defects go unnoticed.  
+- Detecting micro-defects in real-time.
+- Consuming manual inspections, slowing down production.
+- Costs of rework or recalls if defects go unnoticed.  
 
 The key challenge is to develop an AI-based solution that reduces the number of inspections required by the operator through automated pre-validation, speed up inspections, lowering costs by minimizing rework and recalls.
 For defect identification, the system should provide the operator with relevant information on the location of the detected defect in the image, hence reducing the control task duration.
 
 # Description 
 
-This industrial use case, provided by Renault Group, represents the “Visual Inspection” thematic through a classification problem.
-The goal is to be able to assess weld quality from a photo taken by cameras on vehicle production lines.
+A vehicule has many welding seams present at different position on a vehicle chassis. These welding-seams are named c_X.
 
 A weld can have two distinct states:
 
 - **OK**: The welding is normal.
 - **KO**: The welding has defects.
 
+# Usecase objective Intended purpose
+
+The objective is to build an AI system shall be able to recognize if the photo is OK or not. 
+An image that is not OK  is always controlled by the operator. Thus the objective is to maximize the amount of OK photos 
+that shall be detected as OK and thus that won’t be controlled by the operator. There is also some safety constraints
+on the performance. A KO photo shall never be qualified as OK, to ensure that it will always controlled. Additionnaly
+an image is qualified as KO, the operator would like to have an information about where on the image the model detected
+the defect in order to reduce its control task duration. The AI component can return Unknown for undecided images 
+that thus be controlled by the operator too.
+
+<div style="text-align: center; padding: 40px;">
+  <img src="process_new.png" alt="process" width="800px">
+</div>
+
 ## Expected AI Component
 
-The AI component takes an image as input and optionally some additional metadata.
+The goal is to be able to assess weld quality from a photo taken by cameras on vehicle production lines. Thus, 
+the AI component takes an image as input and optionally some additional metadata.
 Three possible outputs are possible:
 
 - **OK**: The welding in the image has no defect.
@@ -51,8 +65,6 @@ This is illustrated by the figure below:
 Optionally, the AI component could additionally return the probability associated with each possible output state. If present, this information will be used by the evaluation process and could improve the final quality score of the solution.
 
 ## Operational Domain Design (ODD) Definition
-
-Optionally, the AI component could additionally return the probability associated with each possible output state. If present, this information will be used by the evaluation process and could improve the final quality score of the solution.
 
 The Operational Domain Design defines the set of input images for which the AI component is expected to return a predicted state.
 
@@ -71,9 +83,9 @@ The operational constraints are as follows:
 - **Maximize the accuracy** of prediction.
 - Some welding seams are **more critical than others**, depending on their position. The level of criticality impacts the cost of false negatives.
 
-## Evaluation Criteria
+## Quality criteria
 
-The submitted AI component will be evaluated according to different quality evaluation metrics, including:
+The built AI component shall takes into account with many quality criterions:
 
 - **Operational cost metrics**: Based on the confusion matrix and a non-symmetrical cost matrix due to operational constraints.
 - **Uncertainty metrics**: Measuring the ability of the model to use uncertainty to improve trustworthiness in its output.
@@ -85,7 +97,8 @@ More details about these different criteria will be added in the coming weeks.
 
 ## Dataset
 
-The dataset contains 22,851 images split among three different welding seams. An important property of this dataset is that it is highly unbalanced. There are only 500 KO images in the entire dataset.
+	The provided dataset has 114231 pictures of welding in full HD (approximatively 31 Go of data). These images are labelled to indicate if the welding is OK or KO .and concerns 12 different types of welding seams. Most of images are in full HD resolution (1920*1080)  but a part are in 960*540 .
+	This dataset is provided with an additional parquet file (fig 1.1) that contains metadata of all images
 
 Here is below some examples of weldings `OK` and `KO` on two different welding seams `c10` and `c19`.
 
@@ -111,11 +124,120 @@ Here is below some examples of weldings `OK` and `KO` on two different welding s
 <br>
 <br>
 
+The labellisation of welding is done by two type of humans annotator : "expert and "operator" .
+
+The welding state class, the welding-seams, type of human annotator is described in sample metadata file .See next section for detailed description of all available metadata
+
+## Metainformations detailed description
+
+All metainformations are stored in a parquet file named meta_ds.parquet` .
+A parquet can be seen as a file representing a dataframe. It can be opened with classical data-anlysis python package like pandas or polars .
+
+The metadata dataframe contains on row by sample .and the follwing 
+
+ of a dataset contains the following columns:
+
+| Column Name | Description                              |
+| ----------- | ---------------------------------------- |
+|sample_id | Unique identifier for the sample. It has a syntax of type  "data_X" |
+| class |  Real state of the welding present on the image, this is the ground_truth . two values are possible OK or KO |
+|timestamp | Datetime where the photo has been taken, this field shall not be useful  |
+| welding-seams | Name of the welding seams whose welding belongs to . The welding-seams are named "c_X"|
+| labelling_type | Type of human that annotated the data . two possible values : "expert" or "operator"|
+| resolution | List contining the resolution of the image [width, height]|
+| path | internal path of the image in the challenge storage|
+| sha256 | Sha256 of the image . It's a unique hexadecimal key represneting image data. This is used to detect alteration of corruption on the storage|
+| storage_type |Type of storage where sample is stored : "s3" or filesystem |
+| data-origin |Type of data. This field has two possible values (real or synthetic)|
+| blur_level | level of blur on the image . The measure has been made numerically using opencv library|
+| blur_class | Class of blur deduced from blur-level field. Two class are considered "blur", and "clean"|
+| lumninosity_level | Luminosity of the image, mesured numerically|
+| external_path | Url of the image. This url shall be used by Challengers to directly download the sample from the dataset from storage|
+|bbox_coord| Coordinate of the bounding box encasluating the welding area on the image |}
+|OOD_score |Numerical measure of OOD score for the image|
+|OOD_class| OOD_class labelled by human|
+|blur_gen_params|For sythetic datasets, target level of blur in generation process|
+|transfo_order| For synthetic datasets, order of applied mutiple perturbations|
+|source_image_id| For synthtetic datasets, source image_id from which the current image has been generated|
+|luminosity_gen_params| For sythetic datasets, target level of luminosity in generation process|
+|rotation_gen_params|For sythetic datasets, target level of rotation in generation process|
+|translation_gen_params|For sythetic datasets, target level of translation in generation process|
+
+## Dataset structure
+
+<!-- - structure : [dataset](#dataset-structure) -->
+
+The list of all available datasets is accessible in this yaml file present at the root of the storage. [Link to be added]()
+It lists all dataset names present in the challenge (ds_name_1, ds_name_2 ..)
+
+There is one subfolder by dataset.
+
+In each dataset folder, images are organized hierarchically according to the following fields: welding-seams-> human_annotator.
+
+Each dataset has a metadata folder containing a single parquet file named ```meta_ds.parquet``` containing all metainformations of all sample present in the dataset
+
+Thus,  datasets storage has the following structure
+```
+.
+├── datasets_list.yml
+├── datasets
+│   ├── ds_name_1
+│   │   ├── metadata
+│   │   |   |──meta_ds.parquet
+│   │   ├── cX
+│   │   │   │── expert
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+│   │   │   │── operator
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+│   │   ├── cY
+│   │   │   │── expert
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+|         ..
+│   ├── ds_name_2
+│   │   ├── metadata
+│   │   |   |──meta_ds.parquet
+│   │   ├── c102
+│   │   │   │── expert
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+│   │   │   │── operator
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+│   │   ├── c27.2
+│   │   │   │── labelling-type
+│   │   │   │   |── sample_X.jpeg
+│   │   │   │   |── sample_Y.jpeg
+│   │   │   │   |── sample_Z.jpeg
+│   │   │   │   |── ..
+```
+
+## Dataset global statistics 
+Number of samples : 114321 images
+-	 76528 images in full HD resolution  (1920*1080)
+-	38202 images in resolution (960*540)
+
+class repartition: 
+-	OK    98,60 %
+-	KO    1.40 %
+
 ## Contact
 
-email: [support@confiance.ai](mailto:challenge.confiance@irt-systemx.fr)
+email: [Fondation] (mailto:fondation@irt-systemx.fr)
 
-Discord: [European Trustworthy AI Foundation #renault-welding-use-case](https://discord.gg/G9RhAECmVr)
+
 
 <br>
 <br>
