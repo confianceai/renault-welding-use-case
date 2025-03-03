@@ -23,7 +23,7 @@ One of the challenges for Renault is to improve the reliability of quality contr
 The key challenge is to develop an AI-based solution that reduces the number of inspections required by the operator through automated pre-validation, speed up inspections, lowering costs by minimizing rework and recalls.
 For defect identification, the system should provide the operator with relevant information on the location of the detected defect in the image, hence reducing the control task duration.
 
-# Description 
+## Description 
 
 A vehicule has many welding seams present at different position on a vehicle chassis. These welding-seams are named c_X.
 
@@ -32,7 +32,7 @@ A weld can have two distinct states:
 - **OK**: The welding is normal.
 - **KO**: The welding has defects.
 
-# Usecase objective Intended purpose
+## Usecase objective (Intended purpose)
 
 The objective is to build an AI system shall be able to recognize if the photo is OK or not. 
 An image that is not OK  is always controlled by the operator. Thus the objective is to maximize the amount of OK photos 
@@ -40,15 +40,15 @@ that shall be detected as OK and thus that won’t be controlled by the operator
 on the performance. A KO photo shall never be qualified as OK, to ensure that it will always controlled. Additionnaly
 an image is qualified as KO, the operator would like to have an information about where on the image the model detected
 the defect in order to reduce its control task duration. The AI component can return Unknown for undecided images 
-that thus be controlled by the operator too.
+that thus be controlled by the operator too. This functional behyvior is described  by the figure below : 
 
 <div style="text-align: center; padding: 40px;">
   <img src="process_new.png" alt="process" width="800px">
 </div>
 
-## Expected AI Component
+<!-- ## Expected AI Component -->
 
-The goal is to be able to assess weld quality from a photo taken by cameras on vehicle production lines. Thus, 
+<!-- The goal is to be able to assess weld quality from a photo taken by cameras on vehicle production lines. Thus, 
 the AI component takes an image as input and optionally some additional metadata.
 Three possible outputs are possible:
 
@@ -60,9 +60,9 @@ This is illustrated by the figure below:
 
 <div style="text-align: center; padding: 40px;">
   <img src="process.png" alt="process" width="800px">
-</div>
+</div> -->
 
-Optionally, the AI component could additionally return the probability associated with each possible output state. If present, this information will be used by the evaluation process and could improve the final quality score of the solution.
+<!-- Optionally, the AI component could additionally return the probability associated with each possible output state. If present, this information will be used by the evaluation process and could improve the final quality score of the solution. -->
 
 ## Operational Domain Design (ODD) Definition
 
@@ -97,8 +97,9 @@ More details about these different criteria will be added in the coming weeks.
 
 ## Dataset
 
-	The provided dataset has 114231 pictures of welding in full HD (approximatively 31 Go of data). These images are labelled to indicate if the welding is OK or KO .and concerns 12 different types of welding seams. Most of images are in full HD resolution (1920*1080)  but a part are in 960*540 .
-	This dataset is provided with an additional parquet file (fig 1.1) that contains metadata of all images
+The provided dataset has 114231 pictures of welding in full HD (approximatively 31 Go of data). These images are labelled to indicate if the welding is OK or KO .and concerns 12 different types of welding seams. 
+Most of images are in full HD resolution ```(1920*1080)```  but a part are in ```(960*540) ```.
+This dataset is provided with an additional parquet file (fig 1.1) that contains metadata of all images
 
 Here is below some examples of weldings `OK` and `KO` on two different welding seams `c10` and `c19`.
 
@@ -130,8 +131,8 @@ The welding state class, the welding-seams, type of human annotator is described
 
 ## Metainformations detailed description
 
-All metainformations are stored in a parquet file named meta_ds.parquet` .
-A parquet can be seen as a file representing a dataframe. It can be opened with classical data-anlysis python package like pandas or polars .
+All metainformations are stored in a parquet file named meta_ds.parquet stored in "metadata" folder in the dataset folder` .
+A parquet can be seen as a file representing a dataframe. It can be opened with classical data-anlysis python packages like pandas or polars .
 
 The metadata dataframe contains on row by sample .and the follwing 
 
@@ -153,21 +154,22 @@ The metadata dataframe contains on row by sample .and the follwing
 | blur_class | Class of blur deduced from blur-level field. Two class are considered "blur", and "clean"|
 | lumninosity_level | Luminosity of the image, mesured numerically|
 | external_path | Url of the image. This url shall be used by Challengers to directly download the sample from the dataset from storage|
-|bbox_coord| Coordinate of the bounding box encasluating the welding area on the image |}
 |OOD_score |Numerical measure of OOD score for the image|
 |OOD_class| OOD_class labelled by human|
-|blur_gen_params|For sythetic datasets, target level of blur in generation process|
+|bbox_coord| Corrdinates of a bounding box delimiting the weld area on the image. The format is [(x_min,y_min),(x_max,y_max)] where (x_min_ymin) is the upper left corner of the rectangle and(x_max,y_max the lower right corner . This field is available only for 90% of the dataset.|
 |transfo_order| For synthetic datasets, order of applied mutiple perturbations|
 |source_image_id| For synthtetic datasets, source image_id from which the current image has been generated|
+|blur_gen_params|For sythetic datasets, target level of blur in generation process|
 |luminosity_gen_params| For sythetic datasets, target level of luminosity in generation process|
 |rotation_gen_params|For sythetic datasets, target level of rotation in generation process|
 |translation_gen_params|For sythetic datasets, target level of translation in generation process|
+
 
 ## Dataset structure
 
 <!-- - structure : [dataset](#dataset-structure) -->
 
-The list of all available datasets is accessible in this yaml file present at the root of the storage. [Link to be added]()
+The list of all available datasets is accessible in this yaml filenamed ``` datasets_list.yml``` present at the root of the storage.
 It lists all dataset names present in the challenge (ds_name_1, ds_name_2 ..)
 
 There is one subfolder by dataset.
@@ -176,7 +178,7 @@ In each dataset folder, images are organized hierarchically according to the fol
 
 Each dataset has a metadata folder containing a single parquet file named ```meta_ds.parquet``` containing all metainformations of all sample present in the dataset
 
-Thus,  datasets storage has the following structure
+Thus, the datasets storage has the following structure.
 ```
 .
 ├── datasets_list.yml
