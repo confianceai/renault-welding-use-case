@@ -96,7 +96,7 @@ The AI component must consider several quality criteria:
 - **Explainability metrics**: Measuring the ability of the model to provide an explanation for its decision to help the
   operator save time during inspection.
 
-More details about these different criteria will be added in the coming weeks.
+More details about these different criteria will be provided in the coming weeks.
 
 ## Dataset
 
