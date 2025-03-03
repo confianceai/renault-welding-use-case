@@ -4,7 +4,7 @@ home: true
 
 heroImage: hero_image_3D.png
 heroText: "Renault Welding inspection"
-tagline: "One the use cases promoted by the European Trustworthy AI Foundation, with the support of Renault Group"
+tagline: "One of the use cases promoted by the European Trustworthy AI Foundation, with the support of Renault Group"
 # actionText: Get started
 # actionLink: /getStarted/
 # secondaryActionText: Guide and documentation
